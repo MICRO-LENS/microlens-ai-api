@@ -1,0 +1,76 @@
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+*.egg
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env
+.env.*
+!.env.example
+
+# ===========================
+# AI Model Weights (large files)
+# Use Git LFS or store in S3 instead
+# ===========================
+*.pt
+*.pth
+*.onnx
+*.bin
+*.safetensors
+*.pkl
+*.pickle
+*.h5
+*.pb
+*.tflite
+models/weights/
+checkpoints/
+
+# ===========================
+# Jupyter Notebook
+# ===========================
+.ipynb_checkpoints/
+*.ipynb
+
+# ===========================
+# Testing & Coverage
+# ===========================
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+
+# ===========================
+# Docker
+# ===========================
+.dockerignore
+
+# ===========================
+# Logs
+# ===========================
+*.log
+logs/
+
+# ===========================
+# OS & Editor
+# ===========================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
