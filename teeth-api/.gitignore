@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# 모델 파일 (용량이 크므로 Git LFS 또는 별도 관리)
+models/*.onnx
+
+# 환경 변수 (예시 파일만 커밋, 실제 .env는 제외)
+.env
