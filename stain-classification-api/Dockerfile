@@ -8,16 +8,11 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
 # ---- Runtime stage ----
-FROM nvidia/cuda:12.4.1-cudnn-runtime-ubuntu22.04
+FROM python:3.10-slim
 
 WORKDIR /app
 
-# 1. Python 3.10 및 pip 설치
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        python3.10 python3-pip \
-    && rm -rf /var/lib/apt/lists/*
-
-# 2. K8s 보안 표준 준수를 위한 비루트(Non-root) 사용자 생성
+# 1. K8s 보안 표준 준수를 위한 비루트(Non-root) 사용자 생성
 RUN useradd -m appuser
 
 # 3. 빌드 스테이지에서 설치된 패키지 복사 (이미지 크기 최소화)
