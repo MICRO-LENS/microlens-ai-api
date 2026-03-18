@@ -1,7 +1,7 @@
 # microlens-ai-api
 
 MicroLens 프로젝트의 AI 백엔드 저장소입니다.
-FastAPI + ONNX Runtime 기반의 AI 추론 서비스 3개를 모노레포 구조로 관리합니다.
+FastAPI 기반의 AI 추론 서비스 3개를 멀티 레포 구조로 관리합니다.
 
 ---
 
@@ -9,8 +9,8 @@ FastAPI + ONNX Runtime 기반의 AI 추론 서비스 3개를 모노레포 구조
 
 | 서비스 | 경로 | 역할 |
 |--------|------|------|
-| stain-classification-api | `stain-classification-api/` | 렌즈 얼룩 분류 (beverage / food / pen) |
-| stain-detection-api | `stain-detection-api/` | 렌즈 얼룩 탐지 (위치 + 클래스) |
+| stain-classification-api | `stain-classification-api/` | 의류 얼룩 분류 (beverage / food / pen) |
+| stain-detection-api | `stain-detection-api/` | 의류 얼룩 탐지 (위치 + 클래스) |
 | teeth-api | `teeth-api/` | 치아 이물질 탐지 (stuck_food) |
 
 ---
@@ -47,7 +47,7 @@ POST /predict    — 이미지 업로드 후 탐지 결과 반환
 GET  /health     — 서버 상태 확인
 ```
 
-응답 예시:
+얼룩탐지모델 응답 예:
 ```json
 {
   "detections": [
@@ -69,7 +69,7 @@ GET  /health     — 서버 상태 확인
 |------|------|
 | 언어 | Python 3.10 |
 | 웹 프레임워크 | FastAPI |
-| 모델 서빙 | ONNX Runtime |
+| 모델 서빙 | ONNX Runtime(로컬에서만, 서버에서는 gpu 사용) |
 | 컨테이너 | Docker |
 | 이미지 레지스트리 | AWS ECR |
 
