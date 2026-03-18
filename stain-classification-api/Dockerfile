@@ -34,7 +34,7 @@ RUN mkdir -p models && chown -R appuser:appuser /app
 USER appuser
 
 # 환경 변수 설정
-ENV MODEL_PATH=models/stain_detection_best.onnx \
+ENV MODEL_PATH=models/stain_classification_best.onnx \
     CONF_THRESHOLD=0.25 \
     IOU_THRESHOLD=0.45 \
     PYTHONDONTWRITEBYTECODE=1 \
