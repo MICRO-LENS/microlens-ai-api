@@ -74,8 +74,8 @@ pipeline {
                         git config user.email "jenkins@microlens"
                         git config user.name "Jenkins CI"
                         git add kustomization.yaml
+                        git diff --cached --quiet && echo "No changes, skipping commit" && exit 0
                         git commit -m "ci: update image tags to $IMAGE_TAG [skip ci]"
-
                         git push https://$GIT_TOKEN@github.com/MICRO-LENS/microlens-infra.git main
                     '''
                 }
