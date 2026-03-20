@@ -174,4 +174,4 @@ docker compose build
 ## 관련 저장소
 
 - [microlens-infra](../microlens-infra) — AWS 인프라 및 Kubernetes 배포
-- [microlens-android](../microlens-android) — Android 클라이언트 앱
+- [microlens-client](../microlens-client) — React + Vite 웹 클라이언트
