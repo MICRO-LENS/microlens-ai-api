@@ -8,7 +8,7 @@ from PIL import Image
 CLASSES = ["stuck_food"]
 MODEL_PATH = os.getenv("MODEL_PATH", "models/teeth_best.onnx")
 CONF_THRESHOLD = float(os.getenv("CONF_THRESHOLD", "0.25"))
-IOU_THRESHOLD = float(os.getenv("IOU_THRESHOLD", "0.45"))
+IOU_THRESHOLD = float(os.getenv("IOU_THRESHOLD", "0.25"))
 IMG_SIZE = 640
 
 

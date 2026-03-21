@@ -3,6 +3,27 @@
 MicroLens 프로젝트의 AI 백엔드 저장소입니다.
 FastAPI 기반의 AI 추론 서비스 3개를 멀티 레포 구조로 관리합니다.
 
+## 모델 선택 배경 — YOLOv5 → YOLOv12 전환
+
+### 왜 YOLOv12인가
+
+서버 GPU 추론 환경에서 **모바일 온디바이스의 연산 제약이 사라진 이상**, YOLOv12의 Attention 메커니즘은 얼룩 탐지에 결정적인 이점을 제공합니다.
+
+- **비정형 객체 특화:** 얼룩은 테두리가 흐릿하고 모양이 제각각입니다. YOLOv5/v8(CNN 기반)은 국소적인 특징에 집중하지만, YOLOv12(Area Attention)는 이미지 전체 맥락을 보고 "이건 옷의 무늬고, 이건 오염물이다"라는 판단을 훨씬 정교하게 수행합니다.
+- **GPU 여유:** 기존 YOLOv5 모델은 T4(15360 MiB) 기준 약 385 MiB만 점유했습니다. GPU 자원이 극히 여유로운 상태이므로 YOLOv12의 추가 메모리 사용(~800~1200 MiB)은 전혀 문제가 되지 않습니다.
+- **신뢰성 우선:** 시각 장애인 사용자에게 "얼룩 없음"을 잘못 알리는 것은 서비스 신뢰도를 무너뜨립니다. 약간의 추론 지연보다 **정확도**가 우선입니다.
+- **데이터 수집 선순환:** 서버 추론 구조에서는 사용자 이미지를 로그로 저장하여 부족한 학습 데이터를 실사용 데이터로 지속 보완할 수 있습니다.
+
+### Execution Provider 전략
+
+| 환경 | Provider |
+|------|----------|
+| 로컬 개발 | `CPUExecutionProvider` (`requirements-dev.txt`) |
+| 운영 — 분류 API | `CUDAExecutionProvider` (CPU 워커) |
+| 운영 — 탐지/치아 API | `CUDAExecutionProvider` (GPU 워커, onnxruntime-gpu) |
+
+---
+
 ## 서비스 구성
 
 | 서비스 | 경로 | 역할 | 모델 파일 | 런타임 |
@@ -87,8 +108,8 @@ GET  /health     — 서버 상태 확인
 |------|------|
 | 언어 | Python 3.10 |
 | 웹 프레임워크 | FastAPI 0.111.0 |
-| 모델 | YOLOv8 (ONNX 포맷, opset 17, dynamic shape) |
-| 모델 서빙 | ONNX Runtime 1.19.2 (CPU: 로컬·분류 API, GPU: 탐지·치아 API) |
+| 모델 | YOLOv12 (ONNX 포맷, opset 17+, dynamic shape) |
+| 모델 서빙 | ONNX Runtime (CPU: 분류 API / GPU: 탐지·치아 API) |
 | 컨테이너 | Docker (멀티 스테이지 빌드, Non-root 실행) |
 | 이미지 레지스트리 | AWS ECR |
 | CI/CD | Jenkins |
@@ -131,6 +152,28 @@ teeth-api/models/teeth_best.onnx
 
 - **로컬**: `models/` 폴더에 직접 배치
 - **운영(AWS)**: 컨테이너 실행 시 외부 볼륨으로 마운트
+
+#### YOLOv12 ONNX export 권장 설정
+
+```python
+from ultralytics import YOLO
+model = YOLO("yolov12n.pt")  # 또는 학습된 best.pt
+model.export(format="onnx", opset=17, dynamic=True, imgsz=640)
+```
+
+export 후 op 호환성 검증:
+
+```bash
+python -c "
+import onnxruntime as ort
+sess = ort.InferenceSession('stain_detection_best.onnx',
+       providers=['CUDAExecutionProvider'])
+print('inputs:', sess.get_inputs())
+print('outputs:', sess.get_outputs())
+"
+```
+
+> `No such operator` 오류 발생 시 `onnxruntime-gpu` 버전 업그레이드 또는 TensorRT 버전을 확인하세요.
 
 ### Python 가상환경 (로컬 실행)
 

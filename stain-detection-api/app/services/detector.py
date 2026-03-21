@@ -4,11 +4,10 @@ import numpy as np
 import onnxruntime as ort
 from PIL import Image
 
-# stain_data.yaml 기준: nc=3, names=['beverage', 'food', 'pen']
-CLASSES = ["beverage", "food", "pen"]
+CLASSES = ["stain"]
 MODEL_PATH = os.getenv("MODEL_PATH", "models/stain_detection_best.onnx")
 CONF_THRESHOLD = float(os.getenv("CONF_THRESHOLD", "0.25"))
-IOU_THRESHOLD = float(os.getenv("IOU_THRESHOLD", "0.45"))
+IOU_THRESHOLD = float(os.getenv("IOU_THRESHOLD", "0.25"))
 IMG_SIZE = 640
 
 
@@ -61,7 +60,7 @@ def _scale_boxes(boxes: np.ndarray, ratio: float, pad: tuple, orig_w: int, orig_
     return boxes
 
 
-class YOLOv8Detector:
+class YOLOv12Detector:
     def __init__(self):
         available = ort.get_available_providers()
         providers = [p for p in ["CUDAExecutionProvider", "CPUExecutionProvider"] if p in available]
@@ -77,7 +76,7 @@ class YOLOv8Detector:
         letterboxed, ratio, pad = _letterbox(img_rgb)
         tensor = letterboxed.transpose(2, 0, 1)[np.newaxis].astype(np.float32) / 255.0
 
-        # YOLOv8 ONNX 출력: (1, 4+nc, num_proposals) — 전치(transpose) 필요
+        # YOLOv12 ONNX 출력: (1, 4+nc, num_proposals) — 전치(transpose) 필요
         raw = self.session.run(None, {self.input_name: tensor})[0]
         detections = self._postprocess(raw[0], orig_w, orig_h, ratio, pad)
 
@@ -89,7 +88,7 @@ class YOLOv8Detector:
         preds = output.T  # (num_proposals, 4+nc)
 
         boxes_xywh = preds[:, :4]
-        class_scores = preds[:, 4:]  # YOLOv8은 objectness 없이 클래스 점수만 존재
+        class_scores = preds[:, 4:]  # YOLOv12은 objectness 없이 클래스 점수만 존재
 
         confidences = class_scores.max(axis=1)
         class_ids = class_scores.argmax(axis=1)
@@ -125,4 +124,4 @@ class YOLOv8Detector:
 
 
 # 앱 시작 시 1회 로드
-detector = YOLOv8Detector()
+detector = YOLOv12Detector()
