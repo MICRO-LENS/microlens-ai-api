@@ -62,9 +62,7 @@ def _scale_boxes(boxes: np.ndarray, ratio: float, pad: tuple, orig_w: int, orig_
 
 class YOLOv12Detector:
     def __init__(self):
-        available = ort.get_available_providers()
-        providers = [p for p in ["CUDAExecutionProvider", "CPUExecutionProvider"] if p in available]
-        self.session = ort.InferenceSession(MODEL_PATH, providers=providers)
+        self.session = ort.InferenceSession(MODEL_PATH, providers=["CPUExecutionProvider"])
         self.input_name = self.session.get_inputs()[0].name
 
     def predict(self, image: Image.Image) -> tuple:
