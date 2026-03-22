@@ -1,5 +1,6 @@
 import os
 import time
+import cv2
 import numpy as np
 import onnxruntime as ort
 from PIL import Image
@@ -12,16 +13,19 @@ IMG_SIZE = 640
 
 
 def _letterbox(img: np.ndarray, target: int = IMG_SIZE):
-    """비율 유지 리사이즈 후 정사각형 패딩."""
-    h, w = img.shape[:2]
-    ratio = min(target / h, target / w)
-    new_w, new_h = int(w * ratio), int(h * ratio)
-    img = np.array(Image.fromarray(img).resize((new_w, new_h), Image.BILINEAR))
-    pad_top = (target - new_h) // 2
-    pad_left = (target - new_w) // 2
-    padded = np.full((target, target, 3), 114, dtype=np.uint8)
-    padded[pad_top:pad_top + new_h, pad_left:pad_left + new_w] = img
-    return padded, ratio, (pad_left, pad_top)
+    """Ultralytics YOLO 원본과 동일한 OpenCV 기반 Letterbox."""
+    shape = img.shape[:2]  # h, w
+    r = min(target / shape[0], target / shape[1])
+    new_unpad = int(round(shape[1] * r)), int(round(shape[0] * r))
+    if shape[::-1] != new_unpad:
+        img = cv2.resize(img, new_unpad, interpolation=cv2.INTER_LINEAR)
+    dw, dh = target - new_unpad[0], target - new_unpad[1]
+    dw /= 2
+    dh /= 2
+    top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
+    left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
+    padded = cv2.copyMakeBorder(img, top, bottom, left, right, cv2.BORDER_CONSTANT, value=(114, 114, 114))
+    return padded, r, (left, top)
 
 
 def _xywh2xyxy(boxes: np.ndarray) -> np.ndarray:
